@@ -52,7 +52,7 @@ def saveToFile(log_file,word):
     :param word:
     :return:
     '''
-    file = open('{0}{1}'.format(log_add, log_file),'w+')
+    file = open('{0}{1}'.format(log_add, log_file),'a+')
     file.write(word)
     file.flush()
     file.close()

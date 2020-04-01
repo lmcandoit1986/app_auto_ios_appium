@@ -9,12 +9,11 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from Config import Config
-from Utils import LogSys, Support, Operate
+from Utils import LogSys, Support, Operate, Alert
 
 
 def findUiObject(driver, Type, Value):
     LogSys.logInfo("定位,type:{0},value:{1}".format(Type, Value))
-    objects = [(By.NAME, 'alert'), (By.NAME, 'alert')]
     try:
         return driver.find_element(Type, Value)
     except NoSuchElementException as NS:
@@ -25,13 +24,24 @@ def findUiObject(driver, Type, Value):
         1、授权类弹框，当匹配弹框后，将列表中的对象删除，减少后续匹配时间
         2、App测试弹框，匹配成功后，不对列表做处理
         '''
-        for uiobject in objects:
-            Target = findUiObjectResetImplicitlyWait(driver, uiobject[0], uiobject[1])
+        for uiobject in Config.permission:
+            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
+            Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
             # 处理掉弹框
             if isinstance(Target, WebElement):
                 LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
-                objects.remove(uiobject)
-                findUiObject(Type, Value)
+                # Alert.alertAccept()
+                Config.permission.remove(uiobject)
+                LogSys.logWarning(Config.permission)
+                findUiObject(driver, Type, Value)
+        for uiobject in Config.app:
+            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'],uiobject['Value']))
+            Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
+            # 处理掉弹框
+            if isinstance(Target, WebElement):
+                LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
+                Operate.clickV2(Target)
+                findUiObject(driver, Type, Value)
 
 
 def findUiObjectResetImplicitlyWait(driver, Type, Value):

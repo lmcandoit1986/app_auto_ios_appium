@@ -1,0 +1,23 @@
+# 弹框元素集合
+# Type 为定位方式
+# Value 为元素值
+# 对应关系如下：
+# By.NAME = name
+# By.CLASS_NAME = class name
+# By.ID = id
+# By.XPATH = xpath
+
+# permission 为系统弹框类的识别元素
+# APP 为APP 自己的弹框逻辑
+permission:
+  - Type: name
+    Value: asdasd
+  - Type: 'class name'
+    Value: asdasd1
+
+APP:
+  - Type: name
+    Value: asdasd
+  - Type: 'class name'
+    Value: asdasd1
+

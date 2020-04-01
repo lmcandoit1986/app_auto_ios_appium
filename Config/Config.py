@@ -26,3 +26,6 @@ IMPLICITLY_WAIT = 3
 
 log_path = '/test/log/'
 img_path = '/test/IMG/'
+
+global permission
+global app
