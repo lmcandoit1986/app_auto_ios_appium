@@ -1,0 +1,17 @@
+appium:
+    iPhone8P:
+        automationName: XCUITest
+        platformName: iOS
+        platformVersion: 12.1.1
+        deviceName: god
+        bundleId: com.store.pa.health
+        udid: 68e6537ab9734732269d168250f0b68a00946728
+        xcodeSigningId: iPhone Developer
+        xcodeOrgId: QE23LAL9K9
+        newCommandTimeout: 3600
+        autoAcceptAlerts: True
+        unicodeKeyboard: True
+        resetKeyboard: True
+        onReset: False
+
+Appium_server: http://127.0.0.1:4723/wd/hub
