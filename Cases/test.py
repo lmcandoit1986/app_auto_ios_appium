@@ -11,6 +11,6 @@ from Utils.Dec import CaseInfo
 class testss(BaseCase):
 
     @CaseInfo
-    def test_1(self):
+    def test_model_CaseName(self):
         Config.title = '这是一个测试用例'
         MainPage(self.driver).actionBack().actionTabMen().actionTabChild()

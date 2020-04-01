@@ -22,9 +22,9 @@ class BaseCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.Device = cls.readConfig(cls)
-        cls.sad = cls.readConfigAlert(cls)
-        Config.permission = cls.sad['permission']
-        Config.app = cls.sad['APP']
+        cls.alerts = cls.readConfigAlert(cls)
+        Config.permission = cls.alerts['permission']
+        Config.app = cls.alerts['APP']
         LogSys.logInfo(Config.permission)
         LogSys.logInfo(Config.app)
         cls.driver = webdriver.Remote(cls.Device['Appium_server'], cls.Device['appium'][Config.devices])
