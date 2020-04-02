@@ -82,3 +82,13 @@ def clickByPointV2(driver,uiobject):
         driver.tap([(Mid_x, Mix_y), (Mid_x, Mix_y)], 500)
     else:
         LogSys.logInfo('对象定位异常，未定位到信息')
+
+def getText(uiobject):
+    if uiobject is None:
+        return None
+    return uiobject.text()
+
+def input(uiobject, Value):
+    Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息', Support.getTime())
+    uiobject.clear()
+    uiobject.send_keys(Value)
