@@ -50,6 +50,45 @@ def findUiObject(driver, Type, Value):
                 Operate.clickV2(Target)
                 findUiObject(driver, Type, Value)
 
+def findUiObjectV2(driver, Type, Value, i):
+    '''
+    定位元素的基础方法，当元素不可见时，去匹配异常处理,i=0 时匹配弹框属性
+    :param driver:
+    :param Type:
+    :param Value:
+    :return:
+    '''
+    LogSys.logInfo("定位,type:{0},value:{1}".format(Type, Value))
+    try:
+        return driver.find_element(Type, Value)
+    except NoSuchElementException as NS:
+        LogSys.logError('NoSuchElementException,type:{0},value:{1}'.format(Type, Value))
+        # 后续 异常弹框的处理
+        '''
+        可以区分弹框类型
+        1、授权类弹框，当匹配弹框后，将列表中的对象删除，减少后续匹配时间
+        2、App测试弹框，匹配成功后，不对列表做处理
+        '''
+        if i == 0:
+            for uiobject in Config.permission:
+                LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
+                Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
+                # 处理掉弹框
+                if isinstance(Target, WebElement):
+                    LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
+                    Alert.alertAccept()
+                    Config.permission.remove(uiobject)
+                    LogSys.logWarning(Config.permission)
+                    findUiObjectV2(driver, Type, Value, i)
+            for uiobject in Config.app:
+                LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'],uiobject['Value']))
+                Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
+                # 处理掉弹框
+                if isinstance(Target, WebElement):
+                    LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
+                    Operate.clickV2(Target)
+                    findUiObject(driver, Type, Value, i)
+
 
 def findUiObjectResetImplicitlyWait(driver, Type, Value):
     driver.implicitly_wait(1)
@@ -112,7 +151,7 @@ def scrollSearchElement(driver, Type, Value, PageMax=15):
     '''
     i = 0
     while True:
-        ob = findUiObject(driver, Type, Value)
+        ob = findUiObjectV2(driver, Type, Value, i)
         if assertUiobjectEnabledInExpectTime(ob, 1):
             return ob
         else:
