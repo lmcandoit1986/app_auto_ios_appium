@@ -3,9 +3,9 @@
 import os
 import logging
 
+from Config import Config
 from Utils import Support
 
-log_add = '/test/log/'
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 log = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def saveToFile(log_file,word):
     :param word:
     :return:
     '''
-    file = open('{0}{1}'.format(log_add, log_file),'a+')
+    file = open('{0}{1}'.format(Config.log_path, log_file),'a+')
     file.write(word)
     file.flush()
     file.close()
