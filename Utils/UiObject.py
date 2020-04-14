@@ -134,10 +134,10 @@ def assertUiobjectEnabledInExpectTime(uiobject, timeOut=3):
         if isinstance(uiobject, WebElement):
             if uiobject.is_enabled() and uiobject.is_displayed():
                 return True
-            if time.time() >= time_end:
-                LogSys.logWarning('在限制时间{0}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeOut))
-                return False
-            Support.sleep(0.5)
+        if time.time() >= time_end:
+            LogSys.logWarning('在限制时间{0}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeOut))
+            return False
+        Support.sleep(0.5)
 
 
 def scrollSearchElement(driver, Type, Value, PageMax=15):
