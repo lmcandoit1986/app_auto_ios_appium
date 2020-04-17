@@ -23,29 +23,13 @@ from Page.BeforPage import BeforePage
 验证：assert 开头
 '''
 
-class MainPage:
-
-    tap_1 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[2]/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[1]'
-    tap_2 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[2]/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[2]'
-    tap_3 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[2]/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[4]'
+class MainPage(object):
 
     def __init__(self, driver):
         self.driver = driver
 
     @elementDecorator(By.NAME, "保险")
     def _objectBack(self):
-        pass
-
-    @elementDecorator(By.XPATH, tap_1)
-    def _object1(self):
-        pass
-
-    @elementDecorator(By.XPATH, tap_2)
-    def _object2(self):
-        pass
-
-    @elementDecorator(By.XPATH, tap_3)
-    def _object3(self):
         pass
 
     @elementDecorator(By.ID, "id_tile")
@@ -62,20 +46,4 @@ class MainPage:
     def assertTitle(self):
         Asserts.assertTrueNoPic(False, "reason")
 
-    def actionUnlock(self):
-        tap1_rect = self._object1().rect
-        tap2_rect = self._object2().rect
-        tap3_rect = self._object3().rect
-        x = tap1_rect.get('x')+tap1_rect.get('width')/2
-        y = tap1_rect.get('y')+tap1_rect.get('height')/2
-        tox = tap2_rect.get('x')-tap1_rect.get('x')
-        toy = tap3_rect.get('y')-tap1_rect.get('y')
-        TouchAction(driver=self.driver).press(None, x, y).wait(300)\
-            .move_to(None, x+tox, y).wait(300)\
-            .move_to(None, x+tox+tox, y).wait(300)\
-            .move_to(None, x+tox+tox, y+toy).wait(300)\
-            .move_to(None, x+tox+tox, y+toy+toy)\
-            .release().perform()
-        Support.sleep(10)
-        return self
 

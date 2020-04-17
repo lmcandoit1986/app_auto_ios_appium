@@ -12,12 +12,8 @@
 permission:
   - Type: name
     Value: asdasd
-  - Type: 'class name'
-    Value: asdasd1
 
 APP:
   - Type: name
     Value: asdasd
-  - Type: 'class name'
-    Value: asdasd1
 

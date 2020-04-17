@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-from selenium.webdriver.common.by import By
 
 from Base.BaseCase import BaseCase
 from Config import Config
-from Page.LockPage import LockPage
 from Page.MainPage import MainPage
-from Utils import UiObject
 from Utils.Dec import CaseInfo
 
 # python3 -m unittest Cases/test.py
@@ -14,11 +11,11 @@ from Utils.Dec import CaseInfo
 class testss(BaseCase):
 
     @CaseInfo
-    def test_model_CaseName1(self):
+    def test_model1_CaseName1(self):
         Config.title = '这是一个测试用例'
-        LockPage(self.driver).actionUnlock().actionBack()
+        MainPage(self.driver).actionBack().actionTabMen().actionTabChild()
 
     @CaseInfo
-    def test_model_CaseName2(self):
+    def test_model1_CaseName2(self):
         Config.title = '这是一个测试用例'
         MainPage(self.driver).actionBack().actionTabMen().actionTabChild()

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+from appium.webdriver.common.touch_action import TouchAction
 
 from Config import Config
 from Utils import Support, LogSys, Asserts
@@ -92,3 +93,18 @@ def input(uiobject, Value):
     Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息', Support.getTime())
     uiobject.clear()
     uiobject.send_keys(Value)
+
+def draw(points, driver):
+    '''
+    绘制图案
+    :param points:绘制图案用到的坐标点集合，格式[{'x':1,'y':2},{'x':1,'y':2}]
+    :param driver:
+    :return:
+    '''
+    touchAction = TouchAction(driver=driver)
+    if len(points) > 0:
+        touchAction.pressItem(None, points[0]['x'], points[0]['y']).sleep()
+        for point in points[1:]:
+            touchAction.move_to(None, point['x'], point['y'])
+        touchAction.release().perform()
+
