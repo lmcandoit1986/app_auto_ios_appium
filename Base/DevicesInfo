@@ -4,7 +4,7 @@ appium:
         platformName: iOS
         platformVersion: 12.1.1
         deviceName: god
-        bundleId: com.store.pa.health
+        bundleId: com.hnczb.czb
         udid: 68e6537ab9734732269d168250f0b68a00946728
         xcodeSigningId: iPhone Developer
         xcodeOrgId: QE23LAL9K9

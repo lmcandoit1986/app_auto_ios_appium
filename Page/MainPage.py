@@ -10,8 +10,8 @@ curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 sys.path.append(rootPath)
 
-from Utils import Operate, Asserts, Support
-from Utils.Dec import elementDecorator
+from Utils import Operate, Asserts, Support, UiObject
+from Utils.Dec import elementDecorator, elementV2Decorator
 from Page.BeforPage import BeforePage
 
 '''
@@ -28,8 +28,12 @@ class MainPage(object):
     def __init__(self, driver):
         self.driver = driver
 
-    @elementDecorator(By.NAME, "保险")
+    @elementV2Decorator(By.ID, "理财")
     def _objectBack(self):
+        pass
+
+    @elementDecorator(By.ID, "cmbc close")
+    def _objectClose(self):
         pass
 
     @elementDecorator(By.ID, "id_tile")
@@ -37,7 +41,8 @@ class MainPage(object):
         pass
 
     def actionBack(self):
-        Operate.click(self._objectBack())
+        # print(self.driver.page_source)
+        Operate.clickByObjectPoint(self.driver, self._objectBack())
         return BeforePage(self.driver)
 
     def getTitle(self):
@@ -45,5 +50,6 @@ class MainPage(object):
 
     def assertTitle(self):
         Asserts.assertTrueNoPic(False, "reason")
+
 
 

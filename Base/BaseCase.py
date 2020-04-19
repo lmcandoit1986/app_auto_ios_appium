@@ -47,7 +47,6 @@ class BaseCase(unittest.TestCase):
         Config.isinit += 1
         self._start = time.time()
         Config.title = None
-        Support.sleep(10)
 
 
     def tearDown(self):

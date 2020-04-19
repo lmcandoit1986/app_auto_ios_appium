@@ -30,6 +30,25 @@ def elementDecorator(type, value, WAIT_TIME=3):
         return wrapper
     return deco
 
+def elementV2Decorator(type, value, WAIT_TIME=5):
+    '''
+    定位元素装饰器
+    :param driver:
+    :param type:
+    :param value:
+    :param WAIT_TIME:
+    :return: 如果未匹配到元素，返回None
+    '''
+    def deco(func):
+        def wrapper(*arg, **kw):
+            ob = UiObject.findUiObject(Config.driver, type, value)
+            if UiObject.assertUiobjectExistInExpectTime(ob, WAIT_TIME):
+                return ob
+            else:
+                return None
+        return wrapper
+    return deco
+
 def scrollSearchElementDecorator(type,value ,PageMax =10):
     '''
     列表定位元素，默认最大滑动10次，如果未找到元素，返回None

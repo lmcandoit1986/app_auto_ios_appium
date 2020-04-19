@@ -41,7 +41,7 @@ def scroll(FROM, Cycle):
     for i in range(Cycle):
         Config.driver.execute_script('mobile: scroll', {'direction': FROM})
 
-def clickByPoint(driver,uiobject):
+def clickByObjectPoint(driver,uiobject):
     Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息', Support.getTime())
     Mid_x = uiobject.rect.get('x') + uiobject.rect.get('width') / 2
     Mix_y = uiobject.rect.get('y') + uiobject.rect.get('height') / 2
@@ -54,7 +54,7 @@ def clickByPoint(driver,x,y):
 
 def click(uiobject):
     LogSys.logInfo(type(uiobject))
-    Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息',Support.getTime())
+    Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息', Support.getTime())
     LogSys .logInfo('click element')
     uiobject.click()
 

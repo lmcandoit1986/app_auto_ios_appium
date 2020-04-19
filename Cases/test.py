@@ -16,9 +16,4 @@ class testss(BaseCase):
     @CaseInfo
     def test_model_CaseName1(self):
         Config.title = '这是一个测试用例'
-        LockPage(self.driver).actionUnlock().actionBack()
-
-    @CaseInfo
-    def test_model_CaseName2(self):
-        Config.title = '这是一个测试用例'
-        MainPage(self.driver).actionBack().actionTabMen().actionTabChild()
+        LockPage(self.driver).actionClose().actionUnlock().actionBack()

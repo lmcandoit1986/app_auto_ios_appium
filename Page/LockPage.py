@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import time
 
 from appium.webdriver.common.touch_action import TouchAction
 from selenium.webdriver.common.by import By
@@ -27,9 +28,16 @@ from Page.BeforPage import BeforePage
 
 class LockPage(object):
 
-    tap_1 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[2]/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[1]'
-    tap_2 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[2]/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[2]'
-    tap_3 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[2]/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[4]'
+    up_shutdown_id ='icon close update' # 升级关闭按
+
+    forget_psw_Name = '忘记手势密码' # 忘记密码
+
+    tap_1 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[1]'
+
+    tap_2 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[2]'
+
+    tap_3 = '//XCUIElementTypeApplication[@name="华能成长宝"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeOther[4]'
+
 
     def __init__(self, driver):
         self.driver = driver
@@ -46,15 +54,37 @@ class LockPage(object):
     def _object3(self):
         pass
 
+    @elementDecorator(By.ID, up_shutdown_id)
+    def _objcetclose(self):
+        pass
+
+    @elementDecorator(By.NAME, forget_psw_Name)
+    def _objcetforgetPSW(self):
+        pass
+
+    def actionClose(self):
+        Operate.clickV2(self._objcetclose())
+        return self
+
     def actionUnlock(self):
+
+        end_time = time.time() + 10
+        while(True):
+            if self._objcetforgetPSW():
+                break
+            if time.time() >= end_time:
+                break
+            Support.sleep(0.5)
+
         tap1_rect = self._object1().rect
         tap2_rect = self._object2().rect
         tap3_rect = self._object3().rect
-
+        # 106.5 293.5 100 100
         x = tap1_rect.get('x') + tap1_rect.get('width') / 2
         y = tap1_rect.get('y') + tap1_rect.get('height') / 2
         x_x = tap2_rect.get('x') - tap1_rect.get('x')
         y_y = tap3_rect.get('y') - tap1_rect.get('y')
+
         points =[]
         points.append({'x': x, 'y': y})
         for i in range(2):
@@ -77,7 +107,6 @@ class LockPage(object):
         暂不支持斜向滑动
         '''
         LogSys.logInfo(points)
-        # Operate.draw(points, self.driver)
         touchAction = TouchAction(self.driver)
         touchAction.press(None, points[0]['x'], points[0]['y']).wait(300)\
             .move_to(None, points[1]['x'], points[1]['y']).wait(300)\

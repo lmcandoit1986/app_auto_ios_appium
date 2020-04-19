@@ -6,14 +6,21 @@
 # By.CLASS_NAME = class name
 # By.ID = id
 # By.XPATH = xpath
-
+#D = "id"
+#    XPATH = "xpath"
+#    LINK_TEXT = "link text"
+#    PARTIAL_LINK_TEXT = "partial link text"
+#    NAME = "name"
+#    TAG_NAME = "tag name"
+#    CLASS_NAME = "class name"
+#    CSS_SELECTOR = "css selector"
 # permission 为系统弹框类的识别元素
 # APP 为APP 自己的弹框逻辑
 permission:
-  - Type: name
-    Value: asdasd
+  - Type: id
+    Value: 'cmbc close'
 
 APP:
-  - Type: name
-    Value: asdasd
+  - Type: id
+    Value: 'cmbc close'
 

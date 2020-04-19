@@ -42,13 +42,14 @@ def findUiObject(driver, Type, Value):
                 LogSys.logWarning(Config.permission)
                 findUiObject(driver, Type, Value)
         for uiobject in Config.app:
-            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'],uiobject['Value']))
+            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
             Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
             # 处理掉弹框
             if isinstance(Target, WebElement):
                 LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
                 Operate.clickV2(Target)
                 findUiObject(driver, Type, Value)
+
 
 def findUiObjectV2(driver, Type, Value, i):
     '''
@@ -61,6 +62,7 @@ def findUiObjectV2(driver, Type, Value, i):
     LogSys.logInfo("定位,type:{0},value:{1}".format(Type, Value))
     try:
         return driver.find_element(Type, Value)
+
     except NoSuchElementException as NS:
         LogSys.logError('NoSuchElementException,type:{0},value:{1}'.format(Type, Value))
         # 后续 异常弹框的处理
@@ -79,15 +81,15 @@ def findUiObjectV2(driver, Type, Value, i):
                     Alert.alertAccept()
                     Config.permission.remove(uiobject)
                     LogSys.logWarning(Config.permission)
-                    findUiObjectV2(driver, Type, Value, i)
+                    findUiObjectV2(driver, Type, Value, i + 1)
             for uiobject in Config.app:
-                LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'],uiobject['Value']))
+                LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
                 Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
                 # 处理掉弹框
                 if isinstance(Target, WebElement):
                     LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
                     Operate.clickV2(Target)
-                    findUiObject(driver, Type, Value, i)
+                    findUiObjectV2(driver, Type, Value, i + 1)
 
 
 def findUiObjectResetImplicitlyWait(driver, Type, Value):
@@ -129,11 +131,32 @@ def assertUiobjectEnabledInExpectTime(uiobject, timeOut=3):
     :return:
     '''
     time_end = time.time() + timeOut
-    LogSys.logWarning("uiobjrct type:{0}".format(type(uiobject)))
+    LogSys.logWarning("uiobject type:{0}".format(type(uiobject)))
     while True:
         if isinstance(uiobject, WebElement):
+            LogSys.logInfo('assert')
+            LogSys.logInfo('enabled:' + uiobject.get_attribute('enabled'))
+            LogSys.logInfo('visible:' + uiobject.get_attribute('visible'))
             if uiobject.is_enabled() and uiobject.is_displayed():
                 return True
+        if time.time() >= time_end:
+            LogSys.logWarning('在限制时间{0}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeOut))
+            return False
+        Support.sleep(0.5)
+
+
+def assertUiobjectExistInExpectTime(uiobject, timeOut=3):
+    '''
+    验证元素是否可见及点击
+    :param uiobject:
+    :param timeOut:
+    :return:
+    '''
+    time_end = time.time() + timeOut
+    LogSys.logWarning("uiobject type:{0}".format(type(uiobject)))
+    while True:
+        if isinstance(uiobject, WebElement):
+            return True
         if time.time() >= time_end:
             LogSys.logWarning('在限制时间{0}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeOut))
             return False
@@ -160,11 +183,13 @@ def scrollSearchElement(driver, Type, Value, PageMax=15):
             if i > PageMax:
                 return None
 
+
 def findUiobjects(driver, Type, Value):
     return driver.find_elements(Type, Value)
 
+
 def findUiobjectsWithExpection(driver, Type, Value):
-    uiobjects =  driver.find_elements(Type, Value)
+    uiobjects = driver.find_elements(Type, Value)
     if len(uiobjects) == 0:
         '''
         可以区分弹框类型
@@ -191,6 +216,7 @@ def findUiobjectsWithExpection(driver, Type, Value):
                 findUiobjectsWithExpection(driver, Type, Value)
     return uiobjects
 
+
 def findUiobjectWithInstance(driver, Type, Value, Instance):
     '''
     元素有重复时使用
@@ -202,11 +228,7 @@ def findUiobjectWithInstance(driver, Type, Value, Instance):
     '''
     uiobjects = findUiobjectsWithExpection(driver, Type, Value)
     LogSys.logInfo("uiobjects list len:{0}".format(len(uiobjects)))
-    if len(uiobjects) >Instance:
+    if len(uiobjects) > Instance:
         return uiobjects[Instance]
-    LogSys.logError('instance:{0},but only {1}'.format(Instance,len(uiobjects)))
+    LogSys.logError('instance:{0},but only {1}'.format(Instance, len(uiobjects)))
     return None
-
-
-
-

@@ -22,7 +22,7 @@ DRAG_RIGHT = 'right'
 global title
 global detail
 
-IMPLICITLY_WAIT = 3
+IMPLICITLY_WAIT = 15
 
 log_path = '/test/log/'
 img_path = '/test/IMG/'
