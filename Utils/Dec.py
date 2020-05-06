@@ -1,6 +1,6 @@
 import os
 import sys
-from functools import wraps
+from functools import wraps, update_wrapper
 
 from Config import Config
 
@@ -65,10 +65,22 @@ def scrollSearchElementDecorator(type,value ,PageMax =10):
         return wrapper
     return deco
 
-def CaseInfo(function):
+def CaseRun(function):
     @wraps(function)
     def get_fun_name(self, *args, **kwargs):
         LogSys.logInfo('INSTRUMENTATION_STATUS: test=' + function.__name__)
         function(self, *args, **kwargs)
         LogSys.logInfo('INSTRUMENTATION_STATUS: end')
     return get_fun_name
+
+
+def CaseDesc(desc):
+    def check_returns(f):
+        def new_f(*args, **kwds):
+            LogSys.logInfo('INSTRUMENTATION_STATUS: title=' + desc)
+            result = f(*args, **kwds)
+            return result
+        update_wrapper(new_f, f)
+        return new_f
+
+    return check_returns

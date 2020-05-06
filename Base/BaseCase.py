@@ -46,11 +46,11 @@ class BaseCase(unittest.TestCase):
         # Support.sleep(5)
         Config.isinit += 1
         self._start = time.time()
-        Config.title = None
+        # Config.title = None
 
 
     def tearDown(self):
-        LogSys.logInfo('INSTRUMENTATION_STATUS: title={0}'.format(Config.title))
+        # LogSys.logInfo('INSTRUMENTATION_STATUS: title={0}'.format(Config.title))
         LogSys.logInfo('INSTRUMENTATION_STATUS: time={0}'.format(int(time.time() - self._start)))
         self.driver.close_app()
 
