@@ -43,10 +43,8 @@ class BaseCase(unittest.TestCase):
     def setUp(self):
         if not Config.isinit == 0:
             self.driver.launch_app()
-        # Support.sleep(5)
         Config.isinit += 1
         self._start = time.time()
-        # Config.title = None
 
 
     def tearDown(self):
