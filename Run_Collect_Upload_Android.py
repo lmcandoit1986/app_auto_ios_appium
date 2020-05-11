@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import re
 import smtplib
 import sys
 import time
@@ -18,10 +17,16 @@ sys.path.append(rootPath)
 
 from Utils import Support
 
-
 class AutoCase(object):
-    cmds = ['/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.SumCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner']
+    cmds = [
+        '/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.SumCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner']
     all = []
+
+    def makeSure(self):
+        pathPro = os.path.dirname(os.path.abspath(__file__))
+        pathCMD = os.getcwd()
+        if not pathCMD == pathPro:
+            os.chdir(pathPro)
 
     def RunCase(self):
         self.rt = time.strftime("%Y-%m-%d %X", time.localtime())
@@ -34,12 +39,11 @@ class AutoCase(object):
             item = {}
             while self.ProcessCMD.poll() is None:
                 Results = self.ProcessCMD.stdout.readline().decode("utf-8").strip().replace('\\n', '')
-                # print(Results)
+                self.saveToFile(Results)
                 if Check_Name:
                     if 'INSTRUMENTATION_STATUS: test=' in Results:
                         item = {}
                         model_case = Results.split('=')[1].strip()
-                        # print(model_case)
                         item['case'] = (model_case.split('_'))[1]
                         item['model'] = (model_case.split('_'))[0]
                         item['caseName'] = ""
@@ -81,10 +85,12 @@ class AutoCase(object):
                         continue
 
         jd = self.createDict(self.all)
-        # print(jd)
+        self.saveToFile(str(jd))
+
         try:
             self.copy(jd)
-            requests.post('http://superqa.com.cn:9091/server/result/v3/push', json=jd)
+            res = requests.post('http://superqa.com.cn:9091/server/result/v3/push', json=jd).json()
+            self.saveToFile(str(res))
             if jd['data']['sum']['fail'] > 0:
                 self.SendEmail(jd['data']['sum']['Jenkinsid'])
         except ConnectionError as e:
@@ -170,19 +176,29 @@ class AutoCase(object):
         listresult = list(setback)
         return listresult
 
-    def copy(self,jd):
-        # Today = Support.getNextDay(0)
-        # if not os.path.exists('/Library/WebServer/Documents/IMG/{0}'.format(Today)):
-        #     os.mkdir('/Library/WebServer/Documents/IMG/{0}'.format(Today))
-        os.system('/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a pull /sdcard/hnrmb/ /Users/liming/Desktop/iOSAutoTest/')
+    def copy(self, jd):
+        os.system(
+            '/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a pull /sdcard/hnrmb/ /Users/liming/Desktop/iOSAutoTest/')
         os.system('/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a shell rm -rf /sdcard/hnrmb/')
         for line in jd['data']['detail']:
             if line['pic'] != '':
                 self.sendImg('/Users/liming/Desktop/iOSAutoTest/hnrmb/', line['pic'].split('/')[-1])
-        # os.system('cp /Users/liming/Desktop/iOSAutoTest/* /Library/WebServer/Documents/IMG/{0}/'.format(Today))
         os.system('rm -rf /Users/liming/Desktop/iOSAutoTest/')
         os.mkdir('/Users/liming/Desktop/iOSAutoTest')
 
+    def saveToFile(self, word):
+        '''
+        保存日志到本地
+        :param log_file:
+        :param word:
+        :return:
+        '''
+        file = open('{0}log_{1}'.format('/Users/liming/Desktop/log/Android/', Support.getTimeDay()), 'a+')
+        file.write(word+'\n')
+        file.flush()
+        file.close()
 
-Auto = AutoCase()
-Auto.RunCase()
+if __name__ == '__main__':
+    Auto = AutoCase()
+    Auto.makeSure()
+    Auto.RunCase()

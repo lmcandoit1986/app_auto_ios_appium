@@ -53,6 +53,6 @@ def saveToFile(log_file,word):
     :return:
     '''
     file = open('{0}{1}'.format(Config.log_path, log_file),'a+')
-    file.write(word)
+    file.write(str(word)+'\n')
     file.flush()
     file.close()
