@@ -1,9 +1,9 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 
+import sys
 import os
 import smtplib
-import sys
 import time
 from email.header import Header
 from email.mime.text import MIMEText
@@ -193,10 +193,11 @@ class AutoCase(object):
         :param word:
         :return:
         '''
-        file = open('{0}log_{1}'.format('/Users/liming/Desktop/log/Android/', Support.getTimeDay()), 'a+')
-        file.write(word+'\n')
-        file.flush()
-        file.close()
+        # file = open('{0}log_{1}'.format('/Users/liming/Desktop/log/Android/', Support.getTimeDay()), 'a+')
+        # file.write(str(word)+'\n')
+        # file.flush()
+        # file.close()
+        pass
 
 if __name__ == '__main__':
     Auto = AutoCase()
