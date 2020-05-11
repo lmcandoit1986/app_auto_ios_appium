@@ -24,6 +24,7 @@ class AutoCase(object):
     all = []
 
     def RunCase(self):
+        self.rt = time.strftime("%Y-%m-%d %X", time.localtime())
         for cmd in self.cmds:
             self.ProcessCMD = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True)
             Check_Name = True
@@ -33,6 +34,7 @@ class AutoCase(object):
             item = {}
             while self.ProcessCMD.poll() is None:
                 Results = self.ProcessCMD.stdout.readline().decode("utf-8").strip().replace('\\n', '')
+                # print(Results)
                 if Check_Name:
                     if 'INSTRUMENTATION_STATUS: test=' in Results:
                         item = {}
@@ -57,7 +59,7 @@ class AutoCase(object):
 
                 if Check_Result:
                     if 'INSTRUMENTATION_STATUS: img' in Results:
-                        item['pic'] = '{0}/{1}.png'.format(Support.getNextDay(0), Results.split('=')[1].strip())
+                        item['pic'] = '/{2}/{0}/{1}.png'.format('img', Results.split('=')[1].strip(), 'media')
                         continue
                     if 'INSTRUMENTATION_STATUS: time=' in Results:
                         item['useTime'] = int(Results.split('=')[1])
@@ -79,9 +81,9 @@ class AutoCase(object):
                         continue
 
         jd = self.createDict(self.all)
-
+        # print(jd)
         try:
-            self.copy()
+            self.copy(jd)
             requests.post('http://superqa.com.cn:9091/server/result/v3/push', json=jd)
             if jd['data']['sum']['fail'] > 0:
                 self.SendEmail(jd['data']['sum']['Jenkinsid'])
@@ -105,7 +107,7 @@ class AutoCase(object):
         sum['model'] = '小米8'
         sum['module'] = self.getModelList(item)
         sum['uset'] = time.strftime('%H:%M:%S', time.gmtime(self.getAlltime(item)))
-        sum['runt'] = time.strftime("%Y-%m-%d %X", time.localtime())
+        sum['runt'] = self.rt
         sum['all'] = len(item)
         sum['version'] = '5.9.0'
         sum['fail'] = self.getFailed(item)
@@ -126,7 +128,7 @@ class AutoCase(object):
         # 第三方 SMTP 服务
         mail_host = "smtp.exmail.qq.com"  # 设置服务器
         mail_user = "liming@ycfin.com.cn"  # 用户名
-        mail_pass = "Lm918273"  # 口令
+        mail_pass = "Lm9182731"  # 口令
         sender = 'liming@ycfin.com.cn'
         receivers = ['liming@ycfin.com.cn']  # 接收邮件，可设置为你的QQ邮箱或者其他邮箱
         message = MIMEText(
@@ -147,6 +149,13 @@ class AutoCase(object):
         except smtplib.SMTPException as e:
             i = 1
 
+    def sendImg(self, img_path, img_name, img_type='image/jpeg'):
+        files = {'img': (img_name, open(img_path + img_name, 'rb'), img_type)}
+        url = 'http://superqa.com.cn:9091/api/img/upload'
+        # 上传图片的时候，不使用data和json，用files
+        response = requests.post(url=url, files=files).json()
+        return response
+
     def getAlltime(self, lists):
         back = 0
         for line in lists:
@@ -161,15 +170,18 @@ class AutoCase(object):
         listresult = list(setback)
         return listresult
 
-    def copy(self):
+    def copy(self,jd):
         # Today = Support.getNextDay(0)
         # if not os.path.exists('/Library/WebServer/Documents/IMG/{0}'.format(Today)):
         #     os.mkdir('/Library/WebServer/Documents/IMG/{0}'.format(Today))
         os.system('/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a pull /sdcard/hnrmb/ /Users/liming/Desktop/iOSAutoTest/')
         os.system('/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a shell rm -rf /sdcard/hnrmb/')
+        for line in jd['data']['detail']:
+            if line['pic'] != '':
+                self.sendImg('/Users/liming/Desktop/iOSAutoTest/hnrmb/', line['pic'].split('/')[-1])
         # os.system('cp /Users/liming/Desktop/iOSAutoTest/* /Library/WebServer/Documents/IMG/{0}/'.format(Today))
-        # os.system('rm -rf /Users/liming/Desktop/iOSAutoTest/')
-        # os.mkdir('/Users/liming/Desktop/iOSAutoTest')
+        os.system('rm -rf /Users/liming/Desktop/iOSAutoTest/')
+        os.mkdir('/Users/liming/Desktop/iOSAutoTest')
 
 
 Auto = AutoCase()
