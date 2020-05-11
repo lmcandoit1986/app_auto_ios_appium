@@ -99,7 +99,7 @@ class AutoCase(object):
             self.saveResult(jd)
 
     def saveResult(self, jsonRes):
-        f = open('/Users/liming/Desktop/result.log', 'a')
+        f = open('/Users/liming/Desktop/log/Android/result.log', 'a+')
         f.write(jsonRes)
         f.close()
 
