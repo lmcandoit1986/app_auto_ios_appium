@@ -18,9 +18,12 @@ sys.path.append(rootPath)
 from Utils import Support
 
 class AutoCase(object):
+    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s uka66lz5s48dljjn'
     cmds = [
-        '/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.SumCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner']
+        '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.SumCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
     all = []
+    version =0
+    device = ''
 
     def makeSure(self):
         pathPro = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +32,9 @@ class AutoCase(object):
             os.chdir(pathPro)
 
     def RunCase(self):
+
+        self.version = os.popen('{0} shell dumpsys package com.hnrmb.salary |grep versionName|cut -d"=" -f2'.format(self.cmd_start)).read()
+        self.saveToFile(self.version)
         self.rt = time.strftime("%Y-%m-%d %X", time.localtime())
         for cmd in self.cmds:
             self.ProcessCMD = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True)
@@ -36,10 +42,16 @@ class AutoCase(object):
             Check_Result = False
             Check_Last = False
             Check_desc = False
+            Check_device = True
             item = {}
             while self.ProcessCMD.poll() is None:
                 Results = self.ProcessCMD.stdout.readline().decode("utf-8").strip().replace('\\n', '')
                 self.saveToFile(Results)
+                if Check_device:
+                    if 'INSTRUMENTATION_STATUS: device=' in Results:
+                        self.device = Results.split('=')[1].strip()
+                        Check_device = False
+                        self.saveToFile(self.device)
                 if Check_Name:
                     if 'INSTRUMENTATION_STATUS: test=' in Results:
                         item = {}
@@ -52,6 +64,8 @@ class AutoCase(object):
                         item['pic'] = ''
                         Check_Name = False
                         Check_desc = True
+                        vn = self.startscreenrecord()
+                        self.saveToFile(vn)
                         continue
 
                 if Check_desc:
@@ -69,7 +83,7 @@ class AutoCase(object):
                         item['useTime'] = int(Results.split('=')[1])
                         continue
                     if 'INSTRUMENTATION_STATUS: stack' in Results:
-                        item['comment'] = Results.replace('INSTRUMENTATION_STATUS: stack=', '')
+                        item['comment'] = Results.replace('INSTRUMENTATION_STATUS: stack=', '') + ',录屏文件:{0}.mp4'.format(vn)
                         continue
                     if 'INSTRUMENTATION_STATUS: test=' in Results:
                         Check_Result = False
@@ -78,10 +92,14 @@ class AutoCase(object):
                 if Check_Last:
                     if 'INSTRUMENTATION_STATUS_CODE:' in Results:
                         item['result'] = int(Results.split(':')[1].strip())
+                        self.closescreenrecord()
+                        if item['result'] == 0:
+                            os.system('{0} shell rm -rf sdcard/vedio/{1}.mp4'.format(self.cmd_start,vn))
                         # print(item)
                         self.all.append(item)
                         Check_Last = False
                         Check_Name = True
+
                         continue
 
         jd = self.createDict(self.all)
@@ -92,7 +110,8 @@ class AutoCase(object):
             res = requests.post('http://superqa.com.cn:9091/server/result/v3/push', json=jd).json()
             self.saveToFile(str(res))
             if jd['data']['sum']['fail'] > 0:
-                self.SendEmail(jd['data']['sum']['Jenkinsid'])
+                self.sms(jd['data']['sum']['Jenkinsid'])
+                # self.SendEmail(jd['data']['sum']['Jenkinsid'])
         except ConnectionError as e:
             self.saveResult(jd)
         except MaxRetryError as e:
@@ -103,6 +122,27 @@ class AutoCase(object):
         f.write(jsonRes)
         f.close()
 
+    def sms(self,jenkinsId):
+        url = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=753a96b4-b476-48cf-a648-354f97616957'
+
+        header = {'Content-Type': 'application/json'}
+
+        body = {
+            "msgtype": "news",
+            "news": {
+                "articles": [
+                    {
+                        "title": "UI 自动化结果反馈（线上）",
+                        "description": "发现异常，点击查看明细！",
+                        "url": "http://superqa.com.cn:9091/web/result/uiauto/detail?jenkinsId={0}&platform=Android&user=visitor".format(jenkinsId),
+                        "picurl": "http://superqa.com.cn:9091/media/img/fail.png"
+                    }
+                ]
+            }
+        }
+
+        requests.post(url=url, headers=header, json=body)
+
     def createDict(self, item):
         back = {}
         result = {}
@@ -110,12 +150,12 @@ class AutoCase(object):
 
         sum['platform'] = 'Android'
         sum['app'] = '华能成长宝'
-        sum['model'] = '小米8'
+        sum['model'] = self.device
         sum['module'] = self.getModelList(item)
         sum['uset'] = time.strftime('%H:%M:%S', time.gmtime(self.getAlltime(item)))
         sum['runt'] = self.rt
         sum['all'] = len(item)
-        sum['version'] = '5.9.0'
+        sum['version'] = self.version
         sum['fail'] = self.getFailed(item)
         sum['Jenkinsid'] = time.strftime("%Y%m%d%H%M", time.localtime())
         result['detail'] = item
@@ -178,13 +218,17 @@ class AutoCase(object):
 
     def copy(self, jd):
         os.system(
-            '/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a pull /sdcard/hnrmb/ /Users/liming/Desktop/iOSAutoTest/')
-        os.system('/Users/liming/Library/Android/sdk/platform-tools/adb -s 1dcb290a shell rm -rf /sdcard/hnrmb/')
+            '{0} pull /sdcard/hnrmb/ /Users/liming/Desktop/iOSAutoTest/'.format(self.cmd_start))
+        os.system('{0} shell rm -rf /sdcard/hnrmb/'.format(self.cmd_start))
         for line in jd['data']['detail']:
             if line['pic'] != '':
                 self.sendImg('/Users/liming/Desktop/iOSAutoTest/hnrmb/', line['pic'].split('/')[-1])
-        os.system('rm -rf /Users/liming/Desktop/iOSAutoTest/')
-        os.mkdir('/Users/liming/Desktop/iOSAutoTest')
+        # os.system('rm -rf /Users/liming/Desktop/iOSAutoTest/')
+        # os.mkdir('/Users/liming/Desktop/iOSAutoTest')
+        os.system(
+            '{0} pull /sdcard/vedio/ /Users/liming/Desktop/iOSAutoTest/'.format(self.cmd_start))
+        os.system(
+            '{0} shell rm -rf /sdcard/vedio/*.*'.format(self.cmd_start))
 
     def saveToFile(self, word):
         '''
@@ -193,11 +237,19 @@ class AutoCase(object):
         :param word:
         :return:
         '''
-        # file = open('{0}log_{1}'.format('/Users/liming/Desktop/log/Android/', Support.getTimeDay()), 'a+')
-        # file.write(str(word)+'\n')
-        # file.flush()
-        # file.close()
+        file = open('{0}log_{1}'.format('/Users/liming/Desktop/Auto/Android/', Support.getTimeDay()), 'a+')
+        file.write(str(word)+'\n')
+        file.flush()
+        file.close()
         pass
+
+    def startscreenrecord(self):
+        vn = time.time()
+        self.ProcessVedio = Popen('{0} shell screenrecord sdcard/vedio/{1}.mp4'.format(self.cmd_start,vn), stdout=PIPE, stderr=STDOUT, shell=True)
+        return vn
+    def closescreenrecord(self):
+        self.ProcessVedio.kill()
+
 
 if __name__ == '__main__':
     Auto = AutoCase()

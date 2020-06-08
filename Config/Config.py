@@ -24,8 +24,8 @@ global detail
 
 IMPLICITLY_WAIT = 15
 
-log_path = '/Users/liming/Desktop/log/iOS/'
-img_path = '/Users/liming/Desktop/log/iOS/IMG/'
+log_path = '/Users/liming/Desktop/Auto/iOS/'
+img_path = '/Users/liming/Desktop/Auto/iOS/IMG/'
 
 global permission
 global app
