@@ -18,9 +18,9 @@ sys.path.append(rootPath)
 from Utils import Support
 
 class AutoCase(object):
-    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s uka66lz5s48dljjn'
+    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s B2NGAC6850506946'
     cmds = [
-        '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.SumCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
+        '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.FIPCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
     all = []
     version =0
     device = ''
@@ -132,7 +132,7 @@ class AutoCase(object):
             "news": {
                 "articles": [
                     {
-                        "title": "UI 自动化结果反馈（线上）",
+                        "title": "UI 自动化（理财）结果反馈（线下）",
                         "description": "发现异常，点击查看明细！",
                         "url": "http://superqa.com.cn:9091/web/result/uiauto/detail?jenkinsId={0}&platform=Android&user=visitor".format(jenkinsId),
                         "picurl": "http://superqa.com.cn:9091/media/img/new.png"
@@ -154,11 +154,11 @@ class AutoCase(object):
         sum['module'] = self.getModelList(item)
         sum['uset'] = time.strftime('%H:%M:%S', time.gmtime(self.getAlltime(item)))
         sum['runt'] = self.rt
-        sum['env'] = 'rel'
         sum['all'] = len(item)
+        sum['env'] = 'test'
         sum['version'] = self.version
         sum['fail'] = self.getFailed(item)
-        sum['Jenkinsid'] = time.strftime("%Y%m%d%H%M", time.localtime())
+        sum['Jenkinsid'] = time.strftime("%Y%m%d%H%M", time.localtime())+"0"
         result['detail'] = item
         result['sum'] = sum
         back['data'] = result
