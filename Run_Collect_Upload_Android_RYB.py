@@ -18,9 +18,9 @@ sys.path.append(rootPath)
 from Utils import Support
 
 class AutoCase(object):
-    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s uka66lz5s48dljjn'
+    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s B2NGAC6850506946'
     cmds = [
-        '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.FIPCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
+        '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.GZB\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
     all = []
     version =0
     device = ''
@@ -84,8 +84,7 @@ class AutoCase(object):
                         item['useTime'] = int(Results.split('=')[1])
                         continue
                     if 'INSTRUMENTATION_STATUS: stack' in Results:
-                        item['comment'] = Results.replace('INSTRUMENTATION_STATUS: stack=',
-                                                          '') + ',录屏文件:{0}.mp4'.format(vn)
+                        item['comment'] = Results.replace('INSTRUMENTATION_STATUS: stack=', '') + ',录屏文件:{0}.mp4'.format(vn)
                         check_comment = True
                         continue
                     if 'INSTRUMENTATION_STATUS: test=' in Results:

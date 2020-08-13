@@ -1,4 +1,4 @@
-#!/usr/bin/python3.8
+#!/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 
 import sys
@@ -18,9 +18,11 @@ sys.path.append(rootPath)
 from Utils import Support
 
 class AutoCase(object):
-    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s uka66lz5s48dljjn'
+    # B2NGAC6850506946 诺基亚
+    # uka66lz5s48dljjn 红米note
+    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s B2NGAC6850506946'
     cmds = [
-        '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.FIPCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
+        '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.AboutMoney\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
     all = []
     version =0
     device = ''
@@ -57,7 +59,7 @@ class AutoCase(object):
                     if 'INSTRUMENTATION_STATUS: test=' in Results:
                         item = {}
                         model_case = Results.split('=')[1].strip()
-                        item['case'] = (model_case.split('_'))[2]
+                        item['case'] = (model_case.split('_'))[1]
                         item['model'] = (model_case.split('_'))[0]
                         item['caseName'] = ""
                         item['result'] = -3
@@ -96,7 +98,6 @@ class AutoCase(object):
                         item['comment'] += Results.replace("at ", "\r\n")
                     else:
                         check_comment = False
-
                 if Check_Last:
                     if 'INSTRUMENTATION_STATUS_CODE:' in Results:
                         item['result'] = int(Results.split(':')[1].strip())
@@ -140,7 +141,7 @@ class AutoCase(object):
             "news": {
                 "articles": [
                     {
-                        "title": "UI 自动化（理财）结果反馈（线下）",
+                        "title": "UI 自动化结果反馈（线上）",
                         "description": "发现异常，点击查看明细！",
                         "url": "http://superqa.com.cn:9091/api/web/ui/detail?jenkinsId={0}&platform=Android&user=visitor".format(jenkinsId),
                         "picurl": "http://superqa.com.cn:9091/media/img/new.png"
@@ -148,7 +149,6 @@ class AutoCase(object):
                 ]
             }
         }
-
         requests.packages.urllib3.disable_warnings()
         requests.post(url=url, headers=header, json=body, verify=False)
 
@@ -163,11 +163,11 @@ class AutoCase(object):
         sum['module'] = self.getModelList(item)
         sum['uset'] = time.strftime('%H:%M:%S', time.gmtime(self.getAlltime(item)))
         sum['runt'] = self.rt
+        sum['env'] = 'rel'
         sum['all'] = len(item)
-        sum['env'] = 'test'
         sum['version'] = self.version
         sum['fail'] = self.getFailed(item)
-        sum['Jenkinsid'] = time.strftime("%Y%m%d%H%M", time.localtime())+"0"
+        sum['Jenkinsid'] = time.strftime("%Y%m%d%H%M", time.localtime())
         result['detail'] = item
         result['sum'] = sum
         back['data'] = result
@@ -264,4 +264,13 @@ class AutoCase(object):
 if __name__ == '__main__':
     Auto = AutoCase()
     Auto.makeSure()
-    Auto.RunCase()
+    res = requests.get("http://superqa.com.cn:9091/mock/data/by/api/key?api=control&key=rel_money").json()
+    if int(time.strftime("%H%M", time.localtime())) < 900:
+        print("时间匹配，执行.")
+        Auto.RunCase()
+    elif res['run']:
+        print("允许执行。")
+        Auto.RunCase()
+    else:
+        print("时间/后台都不匹配，不执行.")
+    # Auto.sms(202007161434)

@@ -18,7 +18,9 @@ sys.path.append(rootPath)
 from Utils import Support
 
 class AutoCase(object):
-    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s uka66lz5s48dljjn'
+    # B2NGAC6850506946 诺基亚
+    # uka66lz5s48dljjn 红米note
+    cmd_start = '/Users/liming/Library/Android/sdk/platform-tools/adb -s B2NGAC6850506946'
     cmds = [
         '{0} shell am instrument -w -r   -e debug false -e class \'com.hnrmb.Cases.SumCase\' com.hnrmb.test/androidx.test.runner.AndroidJUnitRunner'.format(cmd_start)]
     all = []
@@ -43,6 +45,7 @@ class AutoCase(object):
             Check_Last = False
             Check_desc = False
             Check_device = True
+            check_comment = False
             item = {}
             while self.ProcessCMD.poll() is None:
                 Results = self.ProcessCMD.stdout.readline().decode("utf-8").strip().replace('\\n', '')
@@ -83,12 +86,18 @@ class AutoCase(object):
                         item['useTime'] = int(Results.split('=')[1])
                         continue
                     if 'INSTRUMENTATION_STATUS: stack' in Results:
-                        item['comment'] = Results.replace('INSTRUMENTATION_STATUS: stack=', '') + ',录屏文件:{0}.mp4'.format(vn)
+                        item['comment'] = Results.replace('INSTRUMENTATION_STATUS: stack=',
+                                                          '') + ',录屏文件:{0}.mp4'.format(vn)
+                        check_comment = True
                         continue
                     if 'INSTRUMENTATION_STATUS: test=' in Results:
                         Check_Result = False
                         Check_Last = True
                         continue
+                    if 'INSTRUMENTATION_STATUS' not in Results and check_comment and 'com.hnrmb' in Results:
+                        item['comment'] += Results.replace("at ", "\r\n")
+                    else:
+                        check_comment = False
                 if Check_Last:
                     if 'INSTRUMENTATION_STATUS_CODE:' in Results:
                         item['result'] = int(Results.split(':')[1].strip())
@@ -134,14 +143,14 @@ class AutoCase(object):
                     {
                         "title": "UI 自动化结果反馈（线上）",
                         "description": "发现异常，点击查看明细！",
-                        "url": "http://superqa.com.cn:9091/web/result/uiauto/detail?jenkinsId={0}&platform=Android&user=visitor".format(jenkinsId),
+                        "url": "http://superqa.com.cn:9091/api/web/ui/detail?jenkinsId={0}&platform=Android&user=visitor".format(jenkinsId),
                         "picurl": "http://superqa.com.cn:9091/media/img/new.png"
                     }
                 ]
             }
         }
-
-        requests.post(url=url, headers=header, json=body)
+        requests.packages.urllib3.disable_warnings()
+        requests.post(url=url, headers=header, json=body, verify=False)
 
     def createDict(self, item):
         back = {}
@@ -255,4 +264,8 @@ class AutoCase(object):
 if __name__ == '__main__':
     Auto = AutoCase()
     Auto.makeSure()
-    Auto.RunCase()
+    res = requests.get("http://superqa.com.cn:9091/mock/data/by/api/key?api=control&key=rel_monitor").json()
+    if res['run']:
+        print("允许执行。")
+        Auto.RunCase()
+    # Auto.sms(202007161434)
