@@ -3,10 +3,8 @@
 from selenium.webdriver.common.by import By
 
 from Base.BaseCase import BaseCase
-from Config import Config
-from Page.LockPage import LockPage
-from Page.MainPage import MainPage
-from Utils import UiObject, LogSys
+from Page.Login.GuidePage import GuidePage
+from Utils import UiObject, LogSys, Support
 from Utils.Dec import CaseRun, CaseDesc
 
 
@@ -17,5 +15,7 @@ class testss(BaseCase):
     @CaseDesc('这是一个测试用例')
     @CaseRun
     def test_model_CaseName1(self):
-        LockPage(self.driver).actionClose().actionUnlock().actionBack()
+        # GuidePage(self.driver).actionSkip().assertPage('15011043581','111qqq').actionRyb().actionBuy().actionSetMoney('1').actionSure().actionPassword('111111').assertTitle()
+        GuidePage(self.driver).actionSkip().assertPage('15011043581', '111qqq').actionRyb().actionRedeem().actionSetMoney('2').actionSure().actionPassword('111111').assertTitle()
+        Support.sleep(10)
         LogSys.logInfo('this is case')

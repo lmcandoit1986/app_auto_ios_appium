@@ -12,6 +12,7 @@ def alertAccept():
     except NoAlertPresentException as E:
         LogSys.logError('Error:{0}'.format(E))
 
+
 def alertDismiss():
     try:
         Config.driver.switch_to.alert.dismiss()

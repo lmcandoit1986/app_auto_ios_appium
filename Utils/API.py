@@ -10,17 +10,17 @@ sys.path.append(rootPath)
 
 from Utils import Net
 
+
 def getGoodsList(PageNum):
     Url = "https://www.bjycjf.com/api2/goods/business?page={0}&size=10".format(PageNum)
     return Net.request_get(Url)
+
 
 def getGoodsDetail(id):
     Url = "https://www.bjycjf.com/api2/goods/detail/" + id
     return Net.request_get(Url)
 
+
 def getBanner():
     Url = "https://www.bjycjf.com/api2/goods/operation"
     return Net.request_get(Url)
-
-
-

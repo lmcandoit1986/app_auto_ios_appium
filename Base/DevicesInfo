@@ -13,5 +13,19 @@ appium:
         unicodeKeyboard: True
         resetKeyboard: True
         onReset: False
+    iPhone6:
+        automationName: XCUITest
+        platformName: iOS
+        platformVersion: 12.0.1
+        deviceName: iPhone
+        bundleId: com.hnczb.czb
+        udid: 478396782dfaf1416393dd70f3041f5fdf1e8234
+        xcodeSigningId: iPhone Developer
+        xcodeOrgId: QE23LAL9K9
+        newCommandTimeout: 3600
+        autoAcceptAlerts: True
+        unicodeKeyboard: True
+        resetKeyboard: True
+        onReset: False
 
 Appium_server: http://127.0.0.1:4723/wd/hub

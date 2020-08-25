@@ -7,7 +7,7 @@ isinit = 0
 '''
     指定在那台设备跑
 '''
-devices = 'iPhone8P'
+devices = 'iPhone6'
 Server = 'local'  # local 代表本地配置 ，server 代表 服务器配置
 global driver
 
@@ -22,10 +22,12 @@ DRAG_RIGHT = 'right'
 global title
 global detail
 
-IMPLICITLY_WAIT = 15
+IMPLICITLY_WAIT = 1
 
 log_path = '/Users/liming/Desktop/Auto/iOS/'
 img_path = '/Users/liming/Desktop/Auto/iOS/IMG/'
 
 global permission
 global app
+
+NEV = 'test'

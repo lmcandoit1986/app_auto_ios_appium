@@ -1,98 +1,113 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+
 from appium.webdriver.common.touch_action import TouchAction
+from selenium.common.exceptions import ElementNotVisibleException
 
 from Config import Config
 from Utils import Support, LogSys, Asserts
 
 
-def swipes(TO, Cycle):
-    LogSys.logInfo('drag to {0} loop:{1}'.format(TO, Cycle))
-    if TO == 'up':
-        for i in range(Cycle):
+def swipes(direction, num):
+    LogSys.logInfo('drag to {0} loop:{1}'.format(direction, num))
+    if direction == 'up':
+        for i in range(num):
             Config.driver.swipe(Config.width / 2, Config.Height / 5 * 3, Config.width / 2,
-                            Config.Height / 5 * 2, 400)
+                                Config.Height / 5 * 2, 400)
             Support.sleep(1.5)
-    elif TO == 'down':
-        for i in range(Cycle):
+    elif direction == 'down':
+        for i in range(num):
             Config.driver.swipe(Config.width / 2, Config.Height / 5 * 2, Config.width / 2,
                                 Config.Height / 5 * 3, 400)
             Support.sleep(1.5)
-    elif TO == 'left':
-        for i in range( Cycle):
-            Config.driver.swipe(Config.width / 5*3*2, Config.Height / 2, Config.width / 5*2,
+    elif direction == 'left':
+        for i in range(num):
+            Config.driver.swipe(Config.width / 5 * 3 * 2, Config.Height / 2, Config.width / 5 * 2,
                                 Config.Height / 2, 400)
             Support.sleep(1.5)
-    elif TO == 'right':
-        for i in range( Cycle):
-            Config.driver.swipe(Config.width / 5*2, Config.Height / 2, Config.width / 5*3,
+    elif direction == 'right':
+        for i in range(num):
+            Config.driver.swipe(Config.width / 5 * 2, Config.Height / 2, Config.width / 5 * 3,
                                 Config.Height / 2, 400)
             Support.sleep(1.5)
     else:
-        LogSys.logWarning('Key Error with {0}'.format(TO))
+        LogSys.logWarning('Key Error with {0}'.format(direction))
 
-def scroll(FROM, Cycle):
+
+def scroll(direction, num):
     '''
     down,up,left,right
     :param TO:
     :return:
     '''
-    LogSys.logInfo('scroll from {0} loop {1}'.format(FROM, Cycle))
-    for i in range(Cycle):
-        Config.driver.execute_script('mobile: scroll', {'direction': FROM})
+    LogSys.logInfo('scroll from {0} loop {1}'.format(direction, num))
+    for i in range(num):
+        Config.driver.execute_script('mobile: scroll', {'direction': direction})
 
-def clickByObjectPoint(driver,uiobject):
-    Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息', Support.getTime())
-    Mid_x = uiobject.rect.get('x') + uiobject.rect.get('width') / 2
-    Mix_y = uiobject.rect.get('y') + uiobject.rect.get('height') / 2
-    LogSys.logInfo('click element use point {0},{1}'.format(Mid_x, Mix_y))
-    driver.tap([(Mid_x, Mix_y), (Mid_x, Mix_y)], 500)
 
-def clickByPoint(driver,x,y):
-    LogSys.logInfo('click element use point {0},{1}'.format(x, y))
-    driver.tap([(x, y), (x, y)], 500)
+def clickPointFromElement(driver, element):
+    Asserts.assertTrue(element is not None, '对象定位异常，未定位到信息', Support.getTime())
+    mid_x = element.rect.get('x') + element.rect.get('width') / 2
+    mid_y = element.rect.get('y') + element.rect.get('height') / 2
+    LogSys.logInfo('click element use point {0},{1}'.format(mid_x, mid_y))
+    driver.tap([(mid_x, mid_y), (mid_x, mid_y)], 500)
 
-def click(uiobject):
-    LogSys.logInfo(type(uiobject))
-    Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息', Support.getTime())
-    LogSys .logInfo('click element')
-    uiobject.click()
 
-def clickV2(uiobject):
+def clickPoint(driver, point_x, point_y):
+    LogSys.logInfo('click element use point {0},{1}'.format(point_x, point_y))
+    driver.tap([(point_x, point_y), (point_x, point_y)], 500)
+
+
+def clickElement(element):
+    LogSys.logInfo(type(element))
+    Asserts.assertTrue(element is not None, '对象定位异常，未定位到信息', Support.getTime())
+    LogSys.logInfo('click element')
+    try:
+        element.click()
+    except ElementNotVisibleException:
+        Asserts.assertTrueNoPic(False,
+                                'ElementNotVisibleException: Message: The element is not visible on the screen and thus is not interactable')
+
+
+def clickElementNoBreak(element):
     '''
     失败不中断用例执行
-    :param uiobject:
+    :param element:
     :return:
     '''
-    if uiobject is not None:
-        LogSys .logInfo('click element')
-        uiobject.click()
+    if element is not None:
+        LogSys.logInfo('click element')
+        element.click()
     else:
         LogSys.logInfo('对象定位异常，未定位到信息')
 
-def clickByPointV2(driver,uiobject):
+
+def clickPointFromElementNoBreak(driver, element):
     '''
     失败不中断用例执行
-    :param uiobject:
+    :param element:
     :return:
     '''
-    if uiobject is not None:
-        Mid_x = uiobject.rect.get('x') + uiobject.rect.get('width') / 2
-        Mix_y = uiobject.rect.get('y') + uiobject.rect.get('height') / 2
+    if element is not None:
+        Mid_x = element.rect.get('x') + element.rect.get('width') / 2
+        Mix_y = element.rect.get('y') + element.rect.get('height') / 2
         LogSys.logInfo('click element use point {0},{1}'.format(Mid_x, Mix_y))
         driver.tap([(Mid_x, Mix_y), (Mid_x, Mix_y)], 500)
     else:
         LogSys.logInfo('对象定位异常，未定位到信息')
 
-def getText(uiobject):
-    if uiobject is None:
-        return None
-    return uiobject.text()
 
-def input(uiobject, Value):
-    Asserts.assertTrue(uiobject is not None, '对象定位异常，未定位到信息', Support.getTime())
-    uiobject.clear()
-    uiobject.send_keys(Value)
+def getTextFromElement(element):
+    if element is None:
+        return None
+    return element.text()
+
+
+def input(editElement, inputWords):
+    Asserts.assertTrue(editElement is not None, '对象定位异常，未定位到信息', Support.getTime())
+    editElement.clear()
+    editElement.send_keys(inputWords)
+
 
 def draw(points, driver):
     '''
@@ -108,3 +123,8 @@ def draw(points, driver):
             touchAction.move_to(None, point['x'], point['y'])
         touchAction.release().perform()
 
+
+def clickUseTouch(driver, element):
+    x_pos = element.rect.get('x') + element.rect.get('width') / 2
+    y_pos = element.rect.get('y') + element.rect.get('height') / 2
+    TouchAction(driver).tap(x=x_pos, y=y_pos).perform()

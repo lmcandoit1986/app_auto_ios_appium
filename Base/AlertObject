@@ -19,8 +19,12 @@
 permission:
   - Type: id
     Value: 'cmbc close'
+    ClickType: id
+    ClickValue: 'cmbc close'
 
 APP:
   - Type: id
-    Value: 'cmbc close'
+    Value: '未知异常'
+    ClickType: xpath
+    ClickValue: '//XCUIElementTypeButton[@name="确定"]'
 

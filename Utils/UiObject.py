@@ -9,226 +9,159 @@ from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
 from Config import Config
-from Utils import LogSys, Support, Operate, Alert
+from Utils import LogSys, Support, Operate, Alert, Asserts
+
+HAS_FIND_ELEMENT_ENABLED = 1
+HAS_SURE_ELEMENT_UNABLED = 2
+CONTINUE_WAIT_ELEMENT = 3
 
 
-def findUiObject(driver, Type, Value):
-    '''
-    定位元素的基础方法，当元素不可见时，去匹配异常处理
-    :param driver:
-    :param Type:
-    :param Value:
-    :return:
-    '''
-    LogSys.logInfo("定位,type:{0},value:{1}".format(Type, Value))
-    try:
-        return driver.find_element(Type, Value)
-    except NoSuchElementException as NS:
-        LogSys.logError('NoSuchElementException,type:{0},value:{1}'.format(Type, Value))
-        # 后续 异常弹框的处理
-        '''
-        可以区分弹框类型
-        1、授权类弹框，当匹配弹框后，将列表中的对象删除，减少后续匹配时间
-        2、App测试弹框，匹配成功后，不对列表做处理
-        '''
-        for uiobject in Config.permission:
-            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
-            Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
-            # 处理掉弹框
-            if isinstance(Target, WebElement):
-                LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
-                Alert.alertAccept()
-                Config.permission.remove(uiobject)
-                LogSys.logWarning(Config.permission)
-                findUiObject(driver, Type, Value)
-        for uiobject in Config.app:
-            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
-            Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
-            # 处理掉弹框
-            if isinstance(Target, WebElement):
-                LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
-                Operate.clickV2(Target)
-                findUiObject(driver, Type, Value)
-
-
-def findUiObjectV2(driver, Type, Value, i):
-    '''
-    定位元素的基础方法，当元素不可见时，去匹配异常处理,i=0 时匹配弹框属性
-    :param driver:
-    :param Type:
-    :param Value:
-    :return:
-    '''
-    LogSys.logInfo("定位,type:{0},value:{1}".format(Type, Value))
-    try:
-        return driver.find_element(Type, Value)
-
-    except NoSuchElementException as NS:
-        LogSys.logError('NoSuchElementException,type:{0},value:{1}'.format(Type, Value))
-        # 后续 异常弹框的处理
-        '''
-        可以区分弹框类型
-        1、授权类弹框，当匹配弹框后，将列表中的对象删除，减少后续匹配时间
-        2、App测试弹框，匹配成功后，不对列表做处理
-        '''
-        if i == 0:
-            for uiobject in Config.permission:
-                LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
-                Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
-                # 处理掉弹框
-                if isinstance(Target, WebElement):
-                    LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
-                    Alert.alertAccept()
-                    Config.permission.remove(uiobject)
-                    LogSys.logWarning(Config.permission)
-                    findUiObjectV2(driver, Type, Value, i + 1)
-            for uiobject in Config.app:
-                LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
-                Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
-                # 处理掉弹框
-                if isinstance(Target, WebElement):
-                    LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
-                    Operate.clickV2(Target)
-                    findUiObjectV2(driver, Type, Value, i + 1)
-
-
-def findUiObjectResetImplicitlyWait(driver, Type, Value):
-    driver.implicitly_wait(1)
-    try:
-        target = driver.find_element(Type, Value)
-        driver.implicitly_wait(Config.IMPLICITLY_WAIT)
-        return target
-    except NoSuchElementException as NS:
-        driver.implicitly_wait(Config.IMPLICITLY_WAIT)
-        LogSys.logError('NoSuchElementException,type:{0},value:{1}'.format(Type, Value))
-
-
-def assertUiobjectEnabled(driver, uiobject):
-    '''
-    框架提供的显式等待写法，目前实际运行有问题，暂不使用
-    :param uiobject:
-    :return:
-    '''
-    if isinstance(uiobject, WebElement):
-        try:
-            WebDriverWait(driver, 30).until(expected_conditions.presence_of_element_located(uiobject))
-            WebDriverWait(driver, 30).until(expected_conditions.visibility_of_element_located(uiobject))
-            WebDriverWait(driver, 30).until(expected_conditions.element_to_be_clickable(uiobject))
-            return True
-        except TimeoutException as TE:
-            LogSys.logError('TimeoutException')
-            # 后续 异常弹框的处理
-    else:
-        LogSys.logError('NoSuchElementException')
-    return False
-
-
-def assertUiobjectEnabledInExpectTime(uiobject, timeOut=3):
-    '''
-    验证元素是否可见及点击
-    :param uiobject:
-    :param timeOut:
-    :return:
-    '''
-    time_end = time.time() + timeOut
-    LogSys.logWarning("uiobject type:{0}".format(type(uiobject)))
+def find(driver, type=None, value=None, isAssert=True, timeout=0):
+    LogSys.logInfo("--开始定位元素--")
+    LogSys.logInfo("set type : {}".format(type))
+    LogSys.logInfo("set value : {}".format(value))
+    LogSys.logInfo("set isAssert : {}".format(isAssert))
+    LogSys.logInfo("set timeout : {}".format(timeout))
+    time_end = time.time() + timeout
+    LogSys.logInfo("set begin time:{}".format(time_end - timeout))
+    LogSys.logInfo("set end time:{}".format(time_end))
+    # Value 不允许为空
+    Asserts.assertTrueNoPic(value is not None, "传参为空")
     while True:
-        if isinstance(uiobject, WebElement):
-            LogSys.logInfo('assert')
-            LogSys.logInfo('enabled:' + uiobject.get_attribute('enabled'))
-            LogSys.logInfo('visible:' + uiobject.get_attribute('visible'))
-            if uiobject.is_enabled() and uiobject.is_displayed():
-                return True
+        # 通过 type 是否存在决定定位方法
+        if type is None:
+            try:
+                return driver.find_element_by_ios_predicate(value)
+            except NoSuchElementException:
+                LogSys.logError('NoSuchElementException,value:{}'.format(value))
+                if isAssert: Asserts.assertTrueNoPic(False, 'NoSuchElementException,value:{}'.format(value))
+        else:
+            try:
+                return driver.find_element(type, value)
+            except NoSuchElementException:
+                LogSys.logError('NoSuchElementException,type:{},value:{}'.format(type, value))
+                if isAssert: Asserts.assertTrueNoPic(False,
+                                                     'NoSuchElementException,type:{},value:{}'.format(type, value))
+
         if time.time() >= time_end:
-            LogSys.logWarning('在限制时间{0}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeOut))
-            return False
-        Support.sleep(0.5)
+            LogSys.logWarning('在限制时间{0}秒内,未成功获取元素'.format(timeout))
+            return None
+
+        Support.sleep(0.1)
 
 
-def assertUiobjectExistInExpectTime(uiobject, timeOut=3):
-    '''
-    验证元素是否可见及点击
-    :param uiobject:
-    :param timeOut:
-    :return:
-    '''
-    time_end = time.time() + timeOut
-    LogSys.logWarning("uiobject type:{0}".format(type(uiobject)))
+def finds(driver, type=None, value=None, isAssert=True, timeout=0):
+    LogSys.logInfo("--开始定位元素--")
+    LogSys.logInfo("set type : {}".format(type))
+    LogSys.logInfo("set value : {}".format(value))
+    LogSys.logInfo("set isAssert : {}".format(isAssert))
+    LogSys.logInfo("set timeout : {}".format(timeout))
+    time_end = time.time() + timeout
+    LogSys.logInfo("set begin time:{}".format(time_end - timeout))
+    LogSys.logInfo("set end time:{}".format(time_end))
+    # Value 不允许为空
+    Asserts.assertTrueNoPic(value is not None, "传参为空")
     while True:
-        if isinstance(uiobject, WebElement):
-            return True
+        # 通过 type 是否存在决定定位方法
+        if type is None:
+            try:
+                return driver.find_elements_by_ios_predicate(value)
+            except NoSuchElementException:
+                LogSys.logError('NoSuchElementException,value:{}'.format(value))
+                if isAssert: Asserts.assertTrueNoPic(False, 'NoSuchElementException,value:{}'.format(value))
+        else:
+            try:
+                return driver.find_elements(type, value)
+            except NoSuchElementException:
+                LogSys.logError('NoSuchElementException,type:{},value:{}'.format(type, value))
+                if isAssert: Asserts.assertTrueNoPic(False,
+                                                     'NoSuchElementException,type:{},value:{}'.format(type, value))
+
         if time.time() >= time_end:
-            LogSys.logWarning('在限制时间{0}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeOut))
-            return False
-        Support.sleep(0.5)
+            LogSys.logWarning('在限制时间{0}秒内,未成功获取元素'.format(timeout))
+            return None
+
+        Support.sleep(0.1)
 
 
-def scrollSearchElement(driver, Type, Value, PageMax=15):
+def findElementMakeSureEnabled(driver, type=None, value=None, instance=0, timeout=10, isAssert=True):
+    LogSys.logInfo("--开始尝试定位并等待元素准备完成--".format(timeout))
+    time_end = time.time() + timeout
+    LogSys.logInfo("set timeout:{}".format(timeout))
+    LogSys.logInfo("set begin time:{}".format(time_end - timeout))
+    LogSys.logInfo("set end time:{}".format(time_end))
+    while True:
+        if instance == 0:
+            element = find(driver=driver, type=type, value=value, isAssert=False)
+            res = assertEnabled(element=element, timeout=timeout, time_end=time_end, isAssert=isAssert)
+            if res == HAS_FIND_ELEMENT_ENABLED:
+                return element
+            elif res == CONTINUE_WAIT_ELEMENT:
+                return None
+            checkAlert(driver=driver)
+            Support.sleep(0.1)
+        else:
+            element = finds(driver=driver, type=type, value=value, isAssert=False)
+            if len(element) < instance:
+                if isAssert: Asserts.assertTrueNoPic(False, '定位元素集长度：{},传参 {} ,不符合预期'.format(len(element), instance))
+                return None
+            res = assertEnabled(element=element[instance], timeout=timeout, time_end=time_end, isAssert=isAssert)
+            if res == HAS_FIND_ELEMENT_ENABLED:
+                return element[instance]
+            elif res == CONTINUE_WAIT_ELEMENT:
+                return None
+            checkAlert(driver=driver)
+            Support.sleep(0.1)
+
+
+def assertEnabled(element, timeout, time_end, isAssert):
+    if isinstance(element, WebElement):
+        LogSys.logInfo('assert is_enabled&is_displayed')
+        if element.is_enabled() and element.is_displayed():
+            return HAS_FIND_ELEMENT_ENABLED
+    LogSys.logInfo("元素不可点击状态/未在当前页面展示,继续等待")
+    if time.time() >= time_end:
+        LogSys.logWarning('在限制时间{}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeout))
+        if isAssert: Asserts.assertTrueNoPic(False, '在限制时间{0}秒内,未成功获取元素或元素不可点击状态/未在当前页面展示'.format(timeout))
+        return CONTINUE_WAIT_ELEMENT
+    return HAS_SURE_ELEMENT_UNABLED
+
+
+def checkAlert(driver):
+    for item in Config.permission:
+        Target = find(driver=driver, type=item['Type'], value=item['Value'], isAssert=False, timeout=0)
+        # 处理掉弹框
+        if isinstance(Target, WebElement):
+            LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
+            Alert.alertAccept()
+            Config.permission.remove(item)
+            LogSys.logWarning(Config.permission)
+
+    for item in Config.app:
+        Target = find(driver=driver, type=item['Type'], value=item['Value'], isAssert=False, timeout=0)
+        # 处理掉弹框
+        if isinstance(Target, WebElement):
+            LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
+            Operate.clickElementNoBreak(
+                find(driver=driver, type=item['ClickType'], value=item['ClickValue'], isAssert=False))
+
+
+def scrollSearchElement(driver, type, value, pageMax=15):
     '''
     滑动定位元素
     :param driver:
-    :param Type:
-    :param Value:
-    :param PageMax:
+    :param type:
+    :param value:
+    :param pageMax:
     :return:
     '''
     i = 0
     while True:
-        ob = findUiObjectV2(driver, Type, Value, i)
-        if assertUiobjectEnabledInExpectTime(ob, 1):
-            return ob
+        target = findElementMakeSureEnabled(driver=driver, type=type, value=value, isAssert=False, timeout=3)
+        if target is not None:
+            return target
         else:
             Operate.scroll(Config.DRAG_DOWN, 1)
             i += 1
-            if i > PageMax:
+            if i > pageMax:
                 return None
-
-
-def findUiobjects(driver, Type, Value):
-    return driver.find_elements(Type, Value)
-
-
-def findUiobjectsWithExpection(driver, Type, Value):
-    uiobjects = driver.find_elements(Type, Value)
-    if len(uiobjects) == 0:
-        '''
-        可以区分弹框类型
-        1、授权类弹框，当匹配弹框后，将列表中的对象删除，减少后续匹配时间
-        2、App测试弹框，匹配成功后，不对列表做处理
-        '''
-        for uiobject in Config.permission:
-            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
-            Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
-            # 处理掉弹框
-            if isinstance(Target, WebElement):
-                LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
-                Alert.alertAccept()
-                Config.permission.remove(uiobject)
-                LogSys.logWarning(Config.permission)
-                findUiobjectsWithExpection(driver, Type, Value)
-        for uiobject in Config.app:
-            LogSys.logWarning('尝试开始定位，Type:{0},Value:{1}'.format(uiobject['Type'], uiobject['Value']))
-            Target = findUiObjectResetImplicitlyWait(driver, uiobject['Type'], uiobject['Value'])
-            # 处理掉弹框
-            if isinstance(Target, WebElement):
-                LogSys.logInfo("命中弹框，处理掉弹框后，再执行一遍findUiObject方法")
-                Operate.clickV2(Target)
-                findUiobjectsWithExpection(driver, Type, Value)
-    return uiobjects
-
-
-def findUiobjectWithInstance(driver, Type, Value, Instance):
-    '''
-    元素有重复时使用
-    :param driver:
-    :param Type:
-    :param Value:
-    :param Instance:
-    :return:
-    '''
-    uiobjects = findUiobjectsWithExpection(driver, Type, Value)
-    LogSys.logInfo("uiobjects list len:{0}".format(len(uiobjects)))
-    if len(uiobjects) > Instance:
-        return uiobjects[Instance]
-    LogSys.logError('instance:{0},but only {1}'.format(Instance, len(uiobjects)))
-    return None

@@ -10,42 +10,18 @@ sys.path.append(rootPath)
 
 from Utils import UiObject, LogSys
 
-
-def elementDecorator(type, value, WAIT_TIME=3):
+def elementGPS(type=None, value=None, timeout=10, isAssert=True):
     '''
-    定位元素装饰器
-    :param driver:
+    后续统一使用该方法定位
     :param type:
     :param value:
-    :param WAIT_TIME:
-    :return: 如果未匹配到元素，返回None
+    :param timeout:
+    :param isAssert:
+    :return:
     '''
     def deco(func):
         def wrapper(*arg, **kw):
-            ob = UiObject.findUiObject(Config.driver, type, value)
-            if UiObject.assertUiobjectEnabledInExpectTime(ob, WAIT_TIME):
-                return ob
-            else:
-                return None
-        return wrapper
-    return deco
-
-def elementV2Decorator(type, value, WAIT_TIME=5):
-    '''
-    定位元素装饰器
-    :param driver:
-    :param type:
-    :param value:
-    :param WAIT_TIME:
-    :return: 如果未匹配到元素，返回None
-    '''
-    def deco(func):
-        def wrapper(*arg, **kw):
-            ob = UiObject.findUiObject(Config.driver, type, value)
-            if UiObject.assertUiobjectExistInExpectTime(ob, WAIT_TIME):
-                return ob
-            else:
-                return None
+            return UiObject.findElementMakeSureEnabled(driver=Config.driver, type=type, value=value, timeout=timeout, isAssert=isAssert)
         return wrapper
     return deco
 
@@ -82,5 +58,4 @@ def CaseDesc(desc):
             return result
         update_wrapper(new_f, f)
         return new_f
-
     return check_returns
